@@ -204,7 +204,8 @@ public class CanvasMouse {
         clear();
         img.getGraphics().drawString("ALT + MOUSE1 = thick line", 5, img.getHeight() - 5);
         img.getGraphics().drawString("CTRL + MOUSE1 = normal line", 5, img.getHeight() - 20);
-        img.getGraphics().drawString("MOUSE2 = Polygon", 5, img.getHeight() - 35);
+        img.getGraphics().drawString("SHIFT + MOUSE1 = straight line", 5, img.getHeight() - 35);
+        img.getGraphics().drawString("MOUSE2 = Polygon", 5, img.getHeight() - 50);
         panel.repaint();
     }
 
