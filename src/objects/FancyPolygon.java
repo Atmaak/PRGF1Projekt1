@@ -90,7 +90,7 @@ public class FancyPolygon {
 
         while (true) {
             if (x1 >= 0 && x1 < img.getWidth() && y1 >= 0 && y1 < img.getHeight()) {
-                img.setRGB(x1, y1, 0x00FF00F);
+                img.setRGB(x1, y1, 0xff0000);
             }
 
             if (x1 == x2 && y1 == y2) break;

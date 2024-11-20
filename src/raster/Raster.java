@@ -22,16 +22,16 @@ public class Raster {
         return height;
     }
 
-    public void setColor(int c, int r, int color) {
+    public void setRGB(int c, int r, int color) {
         if(c < width && c >= 0 && r < height && r >= 0) img.setRGB(c, r, color);
     }
 
-    public Optional<Integer> getColor(int c, int r) {
+    public int getRGB(int c, int r) {
         if(c < width && c >= 0 && r < height && r >= 0){
-            return Optional.of(img.getRGB(c, r));
+            return img.getRGB(c, r);
         }
         else{
-            return Optional.empty();
+            return 0x000000;
         }
     }
 

@@ -1,7 +1,6 @@
 package rasterizers;
 
 import raster.Raster;
-import rasterizers.LineRasterizer;
 
 import java.awt.*;
 
@@ -24,7 +23,7 @@ public class LineRasterizerTrivial extends LineRasterizer {
 
         // simply adding calculated values to each step in to x and y to get our line
         for (int i = 0; i <= steps; i++) {
-            raster.setColor(Math.round(x), Math.round(y), color);
+            raster.setRGB(Math.round(x), Math.round(y), color);
             x += xIncrement;
             y += yIncrement;
         }
@@ -55,7 +54,7 @@ public class LineRasterizerTrivial extends LineRasterizer {
 
             // Draw the line with the current offset
             for (int j = 0; j <= steps; j++) {
-                raster.setColor(Math.round(x + offsetXCurrent), Math.round(y + offsetYCurrent), color);
+                raster.setRGB(Math.round(x + offsetXCurrent), Math.round(y + offsetYCurrent), color);
                 x += xIncrement;
                 y += yIncrement;
             }

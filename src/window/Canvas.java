@@ -6,6 +6,7 @@ import raster.Raster;
 import rasterizers.LineRasterizerTrivial;
 import rasterizers.PolygonRasterizer;
 
+import rasterizers.SeedFill;
 import utils.TypeOfLine;
 
 import javax.swing.*;
@@ -22,9 +23,11 @@ public class Canvas extends JFrame {
     LineRasterizerTrivial lineRasterizerTrivial;
     PolygonRasterizer polygonRasterizer;
     Polygon polygon;
-    boolean shiftHeld = false;
-    boolean ctrlHeld = false;
-    Point start, end;
+    SeedFill seedFill;
+    boolean shiftPressed = false;
+    boolean ctrlPressed = false;
+    boolean gPressed = false;
+    Point start, end, fillStart;
     public Canvas(int width, int height){
         this.width = width;
         this.height = height;
@@ -40,8 +43,9 @@ public class Canvas extends JFrame {
 
         raster = new Raster(width, height);
         lineRasterizerTrivial = new LineRasterizerTrivial(raster);
-        lineRasterizerTrivial.setColor(0x00ff00);
+        lineRasterizerTrivial.setColor(0xff0000);
         polygonRasterizer = new PolygonRasterizer(lineRasterizerTrivial);
+        seedFill = new SeedFill(raster);
 
         panel = new Panel(raster);
         add(panel, BorderLayout.CENTER);
@@ -56,11 +60,18 @@ public class Canvas extends JFrame {
             @Override
             public void mousePressed(MouseEvent e) {
                 start = new Point(e.getX(), e.getY());
+
+                if(gPressed){
+                    fillStart = new Point(e.getX(), e.getY());
+                    seedFill.fill(fillStart, 0xff0000, (currentValue, point) -> currentValue != 0xff0000);
+                    panel.repaint();
+                }
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                if(!shiftHeld){
+                if(gPressed) return;
+                if(!shiftPressed){
                     end = new Point(e.getX(), e.getY());
                 }
 
@@ -73,7 +84,7 @@ public class Canvas extends JFrame {
 
                 polygon.add(new Line(start, end));
                 polygonRasterizer.drawPolygon(polygon, polygon.isBold());
-
+                if(fillStart != null) seedFill.fill(fillStart, 0xff0000, (currentValue, point) -> currentValue != 0xff0000);
 
                 panel.repaint();
             }
@@ -86,7 +97,7 @@ public class Canvas extends JFrame {
 
                 raster.clear();
 
-                if(shiftHeld){
+                if(shiftPressed){
                     switch (getClosestLineType(start, end)){
                         case TypeOfLine.DIAGONAL: switchPoints(); break;
                         case TypeOfLine.VERTICAL : start.y = end.y; break;
@@ -109,7 +120,6 @@ public class Canvas extends JFrame {
                 lineRasterizerTrivial.setColor(0x00ff00);
 
                 polygonRasterizer.drawPolygon(polygon, polygon.isBold());
-
                 panel.repaint();
             }
         });
@@ -117,24 +127,34 @@ public class Canvas extends JFrame {
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if(e.getKeyCode() == KeyEvent.VK_C){
+                int keyCode = e.getKeyCode();
+                if(keyCode == KeyEvent.VK_C){
                     polygon = new Polygon();
                     raster.clear();
                     panel.repaint();
                 }
 
-                if(e.getKeyCode() == KeyEvent.VK_SHIFT){
-                    shiftHeld = true;
+                if(keyCode == KeyEvent.VK_SHIFT){
+                    shiftPressed = true;
+                }
+
+                if(keyCode == 71){
+                    gPressed = true;
                 }
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
-                if(e.getKeyCode() == KeyEvent.VK_SHIFT){
-                    shiftHeld = false;
+                int keyCode = e.getKeyCode();
+
+                if(keyCode == KeyEvent.VK_SHIFT){
+                    shiftPressed = false;
                 }
-                if(e.getKeyCode() == 17){
-                    ctrlHeld = !ctrlHeld;
+                if(keyCode == 17){
+                    ctrlPressed = !ctrlPressed;
+                }
+                if(keyCode == 71){
+                    gPressed = false;
                 }
             }
         });
