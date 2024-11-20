@@ -1,15 +1,17 @@
+package objects;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class Polygon {
+public class FancyPolygon {
     BufferedImage img;
 
-    public Polygon(BufferedImage img) {
+    public FancyPolygon(BufferedImage img) {
         this.img = img;
     }
 
-    boolean drawing = false;
-    boolean drawingPolygons = false;
+    public boolean drawing = false;
+    public boolean drawingPolygons = false;
     private Point center;
     private Point mousePosition;
     private Point outerEdgeMousePosition;

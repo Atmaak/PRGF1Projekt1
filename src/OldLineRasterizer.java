@@ -1,16 +1,16 @@
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class LineRasterizer {
+public class OldLineRasterizer {
     public int x1, x2, y1, y2 = 0;
     public BufferedImage img;
     public int color = 0xFF0000;
 
-    public LineRasterizer(BufferedImage img) {
+    public OldLineRasterizer(BufferedImage img) {
         this.img = img;
     }
 
-    public LineRasterizer(BufferedImage img, int x1, int y1, int x2, int y2) {
+    public OldLineRasterizer(BufferedImage img, int x1, int y1, int x2, int y2) {
         this.img = img;
         this.x1 = x1;
         this.y1 = y1;

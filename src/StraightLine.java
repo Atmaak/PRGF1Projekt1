@@ -1,7 +1,7 @@
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class StraightLine extends LineRasterizer {
+public class StraightLine extends OldLineRasterizer {
     public StraightLine(BufferedImage img) {
         super(img);
         super.color = 0xFF00FF;
