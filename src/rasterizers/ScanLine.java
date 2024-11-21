@@ -13,20 +13,14 @@ import java.util.ArrayList;
 
 public class ScanLine {
     private Raster raster;
-    private LineRasterizerTrivial lineRasterizer;
     private PolygonRasterizer polygonRasterizer;
-    private Polygon polygon;
-    private Panel panel;
 
-    public ScanLine(Panel panel, PolygonRasterizer polygonRasterizer, Polygon polygon, Raster raster) {
-        this.lineRasterizer = lineRasterizer;
+    public ScanLine(Raster raster, PolygonRasterizer polygonRasterizer) {
         this.polygonRasterizer = polygonRasterizer;
-        this.polygon = polygon;
-        this.panel = panel;
         this.raster = raster;
     }
 
-    public void fill() {
+    public void fill(Polygon polygon) {
         //Pomocný seznam hran - array list ->Edge
         ArrayList<Line> edges = new ArrayList<>();
         for (int i = 0; i < polygon.size(); i++) {
@@ -70,7 +64,7 @@ public class ScanLine {
             for (int i = 0; i < intersections.size()-1; i++) {
                 if (i % 2 == 0) {
                     for (double j = intersections.get(i); j < intersections.get(i+1); j++) {
-                        raster.setRGB((int) j, (int) y, 0xff0000);
+                        raster.setRGB((int) j, (int) y, 0xffff00);
                     }
                 }
             }
@@ -102,15 +96,4 @@ public class ScanLine {
         }
     }
 
-    public PolygonRasterizer getPolygonRasterizer() {
-        return polygonRasterizer;
-    }
-
-    public Polygon getPolygon() {
-        return polygon;
-    }
-
-    public Panel getPanel() {
-        return panel;
-    }
 }

@@ -6,6 +6,7 @@ import raster.Raster;
 import rasterizers.LineRasterizerTrivial;
 import rasterizers.PolygonRasterizer;
 
+import rasterizers.ScanLine;
 import rasterizers.SeedFill;
 import utils.TypeOfLine;
 
@@ -15,6 +16,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 public class Canvas extends JFrame {
     int width, height;
@@ -23,6 +25,8 @@ public class Canvas extends JFrame {
     LineRasterizerTrivial lineRasterizerTrivial;
     PolygonRasterizer polygonRasterizer;
     Polygon polygon;
+    ScanLine scanLine;
+    ArrayList<Polygon> polygons = new ArrayList<>();
     SeedFill seedFill;
     boolean shiftPressed = false;
     boolean ctrlPressed = false;
@@ -46,13 +50,13 @@ public class Canvas extends JFrame {
         lineRasterizerTrivial.setColor(0xff0000);
         polygonRasterizer = new PolygonRasterizer(lineRasterizerTrivial);
         seedFill = new SeedFill(raster);
-
+        scanLine = new ScanLine(raster, polygonRasterizer);
         panel = new Panel(raster);
         add(panel, BorderLayout.CENTER);
         pack();
         setVisible(true);
-
-        polygon = new Polygon();
+        polygons.add(new Polygon());
+        polygon = polygons.getLast();
     }
 
     private void initListeners(){
@@ -76,6 +80,7 @@ public class Canvas extends JFrame {
                 }
 
                 raster.clear();
+                redrawPolygons(polygons);
 
                 if(!polygon.isEmpty()){
                     Line ll = polygon.get(polygon.size()-1);
@@ -96,6 +101,7 @@ public class Canvas extends JFrame {
                 end = new Point(e.getX(), e.getY());
 
                 raster.clear();
+                redrawPolygons(polygons);
 
                 if(shiftPressed){
                     switch (getClosestLineType(start, end)){
@@ -129,8 +135,11 @@ public class Canvas extends JFrame {
             public void keyPressed(KeyEvent e) {
                 int keyCode = e.getKeyCode();
                 if(keyCode == KeyEvent.VK_C){
-                    polygon = new Polygon();
+                    polygons.clear();
+                    polygons.add(new Polygon());
+                    polygon = polygons.getLast();
                     raster.clear();
+                    fillStart = null;
                     panel.repaint();
                 }
 
@@ -138,8 +147,21 @@ public class Canvas extends JFrame {
                     shiftPressed = true;
                 }
 
+                if(keyCode == 17){
+                    ctrlPressed = true;
+                }
+
                 if(keyCode == 71){
                     gPressed = true;
+                }
+
+                if(keyCode == 72){
+                    polygons.add(new Polygon());
+                    polygon = polygons.getLast();
+                }
+
+                if(keyCode == 74){
+                    scanLine.fill(polygons.getLast());
                 }
             }
 
@@ -150,9 +172,11 @@ public class Canvas extends JFrame {
                 if(keyCode == KeyEvent.VK_SHIFT){
                     shiftPressed = false;
                 }
+
                 if(keyCode == 17){
-                    ctrlPressed = !ctrlPressed;
+                    ctrlPressed = false;
                 }
+
                 if(keyCode == 71){
                     gPressed = false;
                 }
@@ -190,6 +214,12 @@ public class Canvas extends JFrame {
         }
 
         return new Point((int)newX, (int)newY);
+    }
+
+    public void redrawPolygons(ArrayList<Polygon> polygonspolygonRasterizer){
+        for (Polygon polygon: polygons) {
+            polygonRasterizer.drawPolygon(polygon, false);
+        }
     }
 
     public void switchPoints(){
