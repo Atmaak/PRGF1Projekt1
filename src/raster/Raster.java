@@ -46,4 +46,8 @@ public class Raster {
             g.drawImage(img, 0, 0, null);
         }
     }
+
+    public Graphics getGraphics(){
+        return img.getGraphics();
+    }
 }
