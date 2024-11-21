@@ -1,7 +1,5 @@
 package objects;
 
-import objects.Line;
-
 import java.util.ArrayList;
 
 public class Polygon extends ArrayList<Line> {

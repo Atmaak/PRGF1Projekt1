@@ -5,14 +5,17 @@ import java.util.Optional;
 
 public class Line {
     public Point start, end;
-    int color = 0xFF0000;
     public Line(Point start, Point end){
         this.start = start;
         this.end = end;
     }
 
-    public Line oriented() {
-        return (start.y < end.y) ? this : new Line(end, start);
+    public void oriented() {
+        if (start.y > end.y) {
+            Point temp = start;
+            start = end;
+            end = temp;
+        }
     }
 
     public Optional<Float> yIntercept(int y) {
@@ -40,6 +43,11 @@ public class Line {
 
     public boolean isHorizontal(){
         return (start.y == end.y);
+    }
+
+    @Override
+    public String toString() {
+        return "Line [start=" + start + ", end=" + end + "]";
     }
 
 }

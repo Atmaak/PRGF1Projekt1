@@ -72,25 +72,47 @@ public class Canvas extends JFrame {
                 }
             }
 
-            @Override
             public void mouseReleased(MouseEvent e) {
-                if(gPressed) return;
-                if(!shiftPressed){
+                if (gPressed) return;
+
+                // Set the end point based on the mouse release position if Shift is not pressed
+                if (!shiftPressed) {
                     end = new Point(e.getX(), e.getY());
                 }
 
+                // Clear the raster and redraw the existing polygons
                 raster.clear();
                 redrawPolygons(polygons);
 
-                if(!polygon.isEmpty()){
-                    Line ll = polygon.get(polygon.size()-1);
-                    start = new Point(ll.end.x, ll.end.y);
+                if (polygon.isEmpty()) {
+                    // If the polygon is empty, start with the first line
+                    polygon.add(new Line(start, end));
+                } else {
+                    // Add the new line to the polygon
+                    polygon.add(new Line(start, end));
                 }
 
-                polygon.add(new Line(start, end));
-                polygonRasterizer.drawPolygon(polygon, polygon.isBold());
-                if(fillStart != null) seedFill.fill(fillStart, 0xff0000, (currentValue, point) -> currentValue != 0xff0000);
+                // If shift is pressed, allow adding another point without closing the polygon
+                if (!shiftPressed) {
+                    // Close the polygon if it has more than 2 lines (i.e., a valid polygon)
+                    if (polygon.size() > 2) {
+                        Line firstLine = polygon.get(0);
+                        Line lastLine = polygon.get(polygon.size() - 1); // The end of the last line
 
+                        // Add the closing line to make it a closed polygon
+                        polygon.add(new Line(firstLine.start, lastLine.end));
+                    }
+                }
+
+                // Draw the polygon on the raster
+                polygonRasterizer.drawPolygon(polygon);
+
+                // Apply the fill if a fill start point is set
+                if (fillStart != null) {
+                    seedFill.fill(fillStart, 0xff0000, (currentValue, point) -> currentValue != 0xff0000);
+                }
+
+                // Repaint the panel to reflect changes
                 panel.repaint();
             }
         });
@@ -125,7 +147,7 @@ public class Canvas extends JFrame {
 
                 lineRasterizerTrivial.setColor(0x00ff00);
 
-                polygonRasterizer.drawPolygon(polygon, polygon.isBold());
+                polygonRasterizer.drawPolygon(polygon);
                 panel.repaint();
             }
         });
@@ -162,6 +184,7 @@ public class Canvas extends JFrame {
 
                 if(keyCode == 74){
                     scanLine.fill(polygons.getLast());
+                    panel.repaint();
                 }
             }
 
@@ -216,9 +239,9 @@ public class Canvas extends JFrame {
         return new Point((int)newX, (int)newY);
     }
 
-    public void redrawPolygons(ArrayList<Polygon> polygonspolygonRasterizer){
+    public void redrawPolygons(ArrayList<Polygon> polygons){
         for (Polygon polygon: polygons) {
-            polygonRasterizer.drawPolygon(polygon, false);
+            polygonRasterizer.drawPolygon(polygon);
         }
     }
 
