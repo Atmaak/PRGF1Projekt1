@@ -1,5 +1,6 @@
 package window;
 
+import objects.FancyPolygon;
 import objects.Line;
 import objects.Polygon;
 import raster.Raster;
@@ -24,12 +25,14 @@ public class Canvas extends JFrame {
     Polygon polygon;
     ScanLine scanLine;
     ArrayList<Polygon> polygons = new ArrayList<>();
+    FancyPolygon fancyPolygon;
     SeedFill seedFill;
-    Cliper sutherHodgman;
+    Cliper cliper;
     boolean shiftPressed = false;
     boolean ctrlPressed = false;
     boolean gPressed = false;
     boolean fPressed = false;
+    boolean kPressed = false;
     Point start, end, fillStart;
 
     public Canvas(int width, int height){
@@ -51,9 +54,10 @@ public class Canvas extends JFrame {
         polygonRasterizer = new PolygonRasterizer(lineRasterizerTrivial);
         seedFill = new SeedFill(raster);
         scanLine = new ScanLine(raster, polygonRasterizer);
-        sutherHodgman = new Cliper();
+        cliper = new Cliper(raster);
+        fancyPolygon = new FancyPolygon(raster);
 
-        panel = new Panel(raster);
+        panel = new Panel(raster, fancyPolygon);
         add(panel, BorderLayout.CENTER);
         pack();
         setVisible(true);
@@ -67,6 +71,16 @@ public class Canvas extends JFrame {
             public void mousePressed(MouseEvent e) {
                 start = new Point(e.getX(), e.getY());
 
+                if(kPressed){
+                    if(!fancyPolygon.drawing){
+                        fancyPolygon.setCenter(new Point(e.getX(), e.getY()));
+                    }else if(!fancyPolygon.drawingPolygons) {
+                        fancyPolygon.setRadius();
+                    } else {
+                        fancyPolygon.draw();
+                    }
+                }
+
                 if(gPressed){
                     fillStart = new Point(e.getX(), e.getY());
                     seedFill.fill(fillStart, 0xff0000, (currentValue, point) -> currentValue != 0xff0000);
@@ -76,18 +90,16 @@ public class Canvas extends JFrame {
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                if (gPressed) return; // Exit if the 'G' key is pressed
+                System.out.println(kPressed);
+                if (gPressed || kPressed) return;
 
-                // Set the end point based on the mouse release position if Shift is not pressed
                 if (!shiftPressed) {
                     end = new Point(e.getX(), e.getY());
                 }
 
-                // Clear the raster and redraw the existing polygons
                 raster.clear();
                 redrawPolygons(polygons);
                 if (polygon.isEmpty()) {
-                    // If the polygon is empty, start with the first line
                     polygon.add(new Line(start, end));
                 } else if(polygon.size() == 1){
                     Line lastLine = polygon.get(polygon.size() - 1);
@@ -103,22 +115,35 @@ public class Canvas extends JFrame {
                     polygon.add(new Line(lastLine.end, end));
                 }
 
-                // Draw the polygon on the raster
                 polygonRasterizer.drawPolygon(polygon);
 
-                // Apply the fill if a fill start point is set
                 if (fillStart != null) {
                     seedFill.fill(fillStart, 0xff0000, (currentValue, point) -> currentValue != 0xff0000);
                 }
 
-                // Repaint the panel to reflect changes
                 panel.repaint();
+            }
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                int x = e.getX();
+                int y = e.getY();
+
+                if(fancyPolygon.drawing && !fancyPolygon.drawingPolygons){
+                    fancyPolygon.setMousePosition(new Point(x, y));
+                }else {
+                    fancyPolygon.setCorners(new Point(x, y));
+                }
             }
         });
 
         panel.addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
+                if(kPressed){
+                    fancyPolygon.setMousePosition(new Point(e.getX(), e.getY()));
+                    return ;
+                }
+
                 end = new Point(e.getX(), e.getY());
 
                 raster.clear();
@@ -185,6 +210,10 @@ public class Canvas extends JFrame {
                     polygon = polygons.get(polygons.size() - 1);
                 }
 
+                if(keyCode == 75){
+                    kPressed = true;
+                }
+
                 if(keyCode == 74){
                     scanLine.fill(polygons.get(polygons.size() - 1));
                     panel.repaint();
@@ -192,15 +221,19 @@ public class Canvas extends JFrame {
 
                 if (keyCode == 76) {
                     Polygon cutter = polygons.getLast();
-                    ArrayList<Line> lines = sutherHodgman.clipPolygons(polygons, cutter);
+//                    ArrayList<Line> lines = sutherHodgman.clipPolygons(polygons, cutter);
+//
+//                    raster.clear();
+//
+//                    for (Line line : lines) {
+//                        lineRasterizerTrivial.drawLine(line.start, line.end);
+//                    }
+//
 
-                    raster.clear();
-
-                    for (Line line : lines) {
-                        lineRasterizerTrivial.drawLine(line.start, line.end);
-                    }
-
+                    cliper.cutPolygons(cutter);
                     polygonRasterizer.drawPolygon(cutter);
+
+
                     panel.repaint();
                 }
             }
@@ -223,6 +256,10 @@ public class Canvas extends JFrame {
 
                 if(keyCode == 71){
                     gPressed = false;
+                }
+
+                if(keyCode == 75){
+                    kPressed = false;
                 }
             }
         });

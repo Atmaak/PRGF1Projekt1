@@ -1,13 +1,15 @@
 package objects;
 
+import raster.Raster;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class FancyPolygon {
-    BufferedImage img;
+    Raster raster;
 
-    public FancyPolygon(BufferedImage img) {
-        this.img = img;
+    public FancyPolygon(Raster raster) {
+        this.raster = raster;
     }
 
     public boolean drawing = false;
@@ -16,13 +18,13 @@ public class FancyPolygon {
     private Point mousePosition;
     private Point outerEdgeMousePosition;
     private int radius;
-    private int corners = 3;
+    private int corners = 5;
 
     public void draw() {
         int[] xPoints = new int[corners];
         int[] yPoints = new int[corners];
 
-        
+
         double angleStep = 2 * Math.PI / corners;
         for (int i = 0; i < corners; i++) {
             double angle = i * angleStep;
@@ -30,13 +32,13 @@ public class FancyPolygon {
             yPoints[i] = (int) (center.y + radius * Math.sin(angle));
         }
 
-        
+
         for (int i = 0; i < corners; i++) {
             int x1 = xPoints[i];
             int y1 = yPoints[i];
             int x2 = xPoints[(i + 1) % corners];
             int y2 = yPoints[(i + 1) % corners];
-            drawLine(x1, y1, x2, y2);
+            drawLine(new Point(x1, y1), new Point(x2, y2));
         }
 
         drawingPolygons = false;
@@ -59,7 +61,7 @@ public class FancyPolygon {
     public void setCorners(Point mousePosition) {
         if(this.mousePosition == null) return;
         int corners = (int) Math.sqrt(Math.pow((this.mousePosition.x - mousePosition.x), 2) + Math.pow((this.mousePosition.y - mousePosition.y), 2)) / 10;
-        this.corners = Math.max(corners, 3);
+        this.corners = /* Math.max(corners, 3) */ 5;
     }
 
     public void drawRadius(Graphics g) {
@@ -80,29 +82,29 @@ public class FancyPolygon {
         g.drawPolygon(xPoints, yPoints, corners);
     }
 
-    private void drawLine(int x1, int y1, int x2, int y2) {
-        
-        int dx = Math.abs(x2 - x1);
-        int dy = Math.abs(y2 - y1);
-        int sx = (x1 < x2) ? 1 : -1;
-        int sy = (y1 < y2) ? 1 : -1;
+    private void drawLine(Point start, Point end) {
+
+        int dx = Math.abs(start.x - end.x);
+        int dy = Math.abs(end.y - start.y);
+        int sx = (start.x < end.x) ? 1 : -1;
+        int sy = (start.y < end.y) ? 1 : -1;
         int err = dx - dy;
 
         while (true) {
-            if (x1 >= 0 && x1 < img.getWidth() && y1 >= 0 && y1 < img.getHeight()) {
-                img.setRGB(x1, y1, 0xff0000);
+            if (start.x >= 0 && start.x < raster.getWidth() && start.y >= 0 && start.y < raster.getHeight()) {
+                raster.setRGB(start.x, start.y, 0x00FF00F);
             }
 
-            if (x1 == x2 && y1 == y2) break;
+            if (start.x == end.x && start.y == end.y) break;
 
             int err2 = err * 2;
             if (err2 > -dy) {
                 err -= dy;
-                x1 += sx;
+                start.x += sx;
             }
             if (err2 < dx) {
                 err += dx;
-                y1 += sy;
+                start.y += sy;
             }
         }
     }
