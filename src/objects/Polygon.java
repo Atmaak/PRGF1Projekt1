@@ -6,5 +6,4 @@ public class Polygon extends ArrayList<Line> {
     public Polygon(){
         super();
     }
-
 }

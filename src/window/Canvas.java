@@ -25,11 +25,13 @@ public class Canvas extends JFrame {
     ScanLine scanLine;
     ArrayList<Polygon> polygons = new ArrayList<>();
     SeedFill seedFill;
-    SutherHodgman sutherHodgman;
+    Cliper sutherHodgman;
     boolean shiftPressed = false;
     boolean ctrlPressed = false;
     boolean gPressed = false;
+    boolean fPressed = false;
     Point start, end, fillStart;
+
     public Canvas(int width, int height){
         this.width = width;
         this.height = height;
@@ -49,14 +51,14 @@ public class Canvas extends JFrame {
         polygonRasterizer = new PolygonRasterizer(lineRasterizerTrivial);
         seedFill = new SeedFill(raster);
         scanLine = new ScanLine(raster, polygonRasterizer);
-        sutherHodgman = new SutherHodgman(seedFill, raster);
+        sutherHodgman = new Cliper();
 
         panel = new Panel(raster);
         add(panel, BorderLayout.CENTER);
         pack();
         setVisible(true);
         polygons.add(new Polygon());
-        polygon = polygons.getLast();
+        polygon = polygons.get(polygons.size() - 1);
     }
 
     private void initListeners(){
@@ -72,6 +74,7 @@ public class Canvas extends JFrame {
                 }
             }
 
+            @Override
             public void mouseReleased(MouseEvent e) {
                 if (gPressed) return; // Exit if the 'G' key is pressed
 
@@ -87,28 +90,17 @@ public class Canvas extends JFrame {
                     // If the polygon is empty, start with the first line
                     polygon.add(new Line(start, end));
                 } else if(polygon.size() == 1){
-                    Line lastLine = polygon.getLast();
+                    Line lastLine = polygon.get(polygon.size() - 1);
                     polygon.add(new Line(lastLine.start, end));
                     polygon.add(new Line(lastLine.end, end));
-
                 } else {
-                    Line firstLine = polygon.getFirst();
-                    Line lastLine = polygon.getLast();
-
-//                    Line newLine = new Line(lastLine.end, firstLine.start);
-//                    System.out.println(newLine);
-//                    for (Line line : polygon){
-//                        System.out.println(line);
-//                        if(line.start == newLine.end && line.end == lastLine.start){
-//                            polygon.remove(line);
-//                        }
-//                    }
+                    Line firstLine = polygon.get(0);
+                    Line lastLine = polygon.get(polygon.size() - 1);
 
                     polygon.remove(new Line(firstLine.start, lastLine.end));
 
                     polygon.add(new Line(firstLine.start, end));
                     polygon.add(new Line(lastLine.end, end));
-
                 }
 
                 // Draw the polygon on the raster
@@ -134,9 +126,9 @@ public class Canvas extends JFrame {
 
                 if(shiftPressed){
                     switch (getClosestLineType(start, end)){
-                        case TypeOfLine.DIAGONAL: switchPoints(); break;
-                        case TypeOfLine.VERTICAL : start.y = end.y; break;
-                        case TypeOfLine.HORIZONTAL : start.x = end.x; break;
+                        case DIAGONAL: switchPoints(); break;
+                        case VERTICAL : start.y = end.y; break;
+                        case HORIZONTAL : start.x = end.x; break;
                     }
                 }
 
@@ -146,7 +138,7 @@ public class Canvas extends JFrame {
                     start = fl.start;
                     lineRasterizerTrivial.drawLine(start, end);
 
-                    Line ll = polygon.get(polygon.size()-1);
+                    Line ll = polygon.get(polygon.size() - 1);
                     start = ll.end;
                 }
 
@@ -166,7 +158,7 @@ public class Canvas extends JFrame {
                 if(keyCode == KeyEvent.VK_C){
                     polygons.clear();
                     polygons.add(new Polygon());
-                    polygon = polygons.getLast();
+                    polygon = polygons.get(polygons.size() - 1);
                     raster.clear();
                     fillStart = null;
                     panel.repaint();
@@ -180,45 +172,35 @@ public class Canvas extends JFrame {
                     ctrlPressed = true;
                 }
 
+                if(keyCode == 70){
+                    fPressed = true;
+                }
+
                 if(keyCode == 71){
                     gPressed = true;
                 }
 
                 if(keyCode == 72){
                     polygons.add(new Polygon());
-                    polygon = polygons.getLast();
+                    polygon = polygons.get(polygons.size() - 1);
                 }
 
                 if(keyCode == 74){
-                    scanLine.fill(polygons.getLast());
+                    scanLine.fill(polygons.get(polygons.size() - 1));
                     panel.repaint();
                 }
 
                 if (keyCode == 76) {
-                    // Get the last polygon in the list to be used as the cutter
                     Polygon cutter = polygons.getLast();
+                    ArrayList<Line> lines = sutherHodgman.clipPolygons(polygons, cutter);
 
-                    // Remove the cutter from the polygons list
-//                    polygons.removeLast();
+                    raster.clear();
 
-                    // Call the cutting method (Sutherland-Hodgman algorithm) and update the polygons
-//                    ArrayList<Line> cutPolygons = sutherHodgman.cutPolygons(polygons, cutter);
+                    for (Line line : lines) {
+                        lineRasterizerTrivial.drawLine(line.start, line.end);
+                    }
 
-
-
-                    sutherHodgman.cutPolygonsCrack(cutter);
-
-//                    System.out.println(cutPolygons);
-
-                    // Clear the polygons and add the result from the cutting operation
-//                    polygons.clear();
-//
-//                    raster.clear();
-//
-//                    for(Line line : cutPolygons){
-//                        lineRasterizerTrivial.drawLine(line.start, line.end);
-//                    }
-//                    polygonRasterizer.drawPolygon(cutter);
+                    polygonRasterizer.drawPolygon(cutter);
                     panel.repaint();
                 }
             }
@@ -233,6 +215,10 @@ public class Canvas extends JFrame {
 
                 if(keyCode == 17){
                     ctrlPressed = false;
+                }
+
+                if(keyCode == 70){
+                    fPressed = false;
                 }
 
                 if(keyCode == 71){
