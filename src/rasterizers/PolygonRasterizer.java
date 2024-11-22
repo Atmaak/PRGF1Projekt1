@@ -30,16 +30,16 @@ public class PolygonRasterizer {
         }
 
         // Add the missing line to close the polygon if not already closed
-        if (lines.size() > 1) {
-            Line firstLine = lines.get(0);
-            Line lastLine = lines.get(lines.size() - 1);
-
-            // Check if the polygon is already closed
-            if (!lastLine.end.equals(firstLine.start)) {
-                // Draw the closing line but do not modify the original list
-                lineRasterizer.drawLine(lastLine.end, firstLine.start);
-            }
-        }
+//        if (lines.size() > 1) {
+//            Line firstLine = lines.get(0);
+//            Line lastLine = lines.get(lines.size() - 1);
+//
+//            // Check if the polygon is already closed
+//            if (!lastLine.end.equals(firstLine.start)) {
+//                // Draw the closing line but do not modify the original list
+//                lineRasterizer.drawLine(lastLine.end, firstLine.start);
+//            }
+//        }
     }
 
 }

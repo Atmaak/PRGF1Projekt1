@@ -3,11 +3,8 @@ package window;
 import objects.Line;
 import objects.Polygon;
 import raster.Raster;
-import rasterizers.LineRasterizerTrivial;
-import rasterizers.PolygonRasterizer;
+import rasterizers.*;
 
-import rasterizers.ScanLine;
-import rasterizers.SeedFill;
 import utils.TypeOfLine;
 
 import javax.swing.*;
@@ -28,6 +25,7 @@ public class Canvas extends JFrame {
     ScanLine scanLine;
     ArrayList<Polygon> polygons = new ArrayList<>();
     SeedFill seedFill;
+    SutherHodgman sutherHodgman;
     boolean shiftPressed = false;
     boolean ctrlPressed = false;
     boolean gPressed = false;
@@ -51,6 +49,8 @@ public class Canvas extends JFrame {
         polygonRasterizer = new PolygonRasterizer(lineRasterizerTrivial);
         seedFill = new SeedFill(raster);
         scanLine = new ScanLine(raster, polygonRasterizer);
+        sutherHodgman = new SutherHodgman(seedFill, raster);
+
         panel = new Panel(raster);
         add(panel, BorderLayout.CENTER);
         pack();
@@ -73,7 +73,7 @@ public class Canvas extends JFrame {
             }
 
             public void mouseReleased(MouseEvent e) {
-                if (gPressed) return;
+                if (gPressed) return; // Exit if the 'G' key is pressed
 
                 // Set the end point based on the mouse release position if Shift is not pressed
                 if (!shiftPressed) {
@@ -83,25 +83,32 @@ public class Canvas extends JFrame {
                 // Clear the raster and redraw the existing polygons
                 raster.clear();
                 redrawPolygons(polygons);
-
                 if (polygon.isEmpty()) {
                     // If the polygon is empty, start with the first line
                     polygon.add(new Line(start, end));
+                } else if(polygon.size() == 1){
+                    Line lastLine = polygon.getLast();
+                    polygon.add(new Line(lastLine.start, end));
+                    polygon.add(new Line(lastLine.end, end));
+
                 } else {
-                    // Add the new line to the polygon
-                    polygon.add(new Line(start, end));
-                }
+                    Line firstLine = polygon.getFirst();
+                    Line lastLine = polygon.getLast();
 
-                // If shift is pressed, allow adding another point without closing the polygon
-                if (!shiftPressed) {
-                    // Close the polygon if it has more than 2 lines (i.e., a valid polygon)
-                    if (polygon.size() > 2) {
-                        Line firstLine = polygon.get(0);
-                        Line lastLine = polygon.get(polygon.size() - 1); // The end of the last line
+//                    Line newLine = new Line(lastLine.end, firstLine.start);
+//                    System.out.println(newLine);
+//                    for (Line line : polygon){
+//                        System.out.println(line);
+//                        if(line.start == newLine.end && line.end == lastLine.start){
+//                            polygon.remove(line);
+//                        }
+//                    }
 
-                        // Add the closing line to make it a closed polygon
-                        polygon.add(new Line(firstLine.start, lastLine.end));
-                    }
+                    polygon.remove(new Line(firstLine.start, lastLine.end));
+
+                    polygon.add(new Line(firstLine.start, end));
+                    polygon.add(new Line(lastLine.end, end));
+
                 }
 
                 // Draw the polygon on the raster
@@ -184,6 +191,34 @@ public class Canvas extends JFrame {
 
                 if(keyCode == 74){
                     scanLine.fill(polygons.getLast());
+                    panel.repaint();
+                }
+
+                if (keyCode == 76) {
+                    // Get the last polygon in the list to be used as the cutter
+                    Polygon cutter = polygons.getLast();
+
+                    // Remove the cutter from the polygons list
+//                    polygons.removeLast();
+
+                    // Call the cutting method (Sutherland-Hodgman algorithm) and update the polygons
+//                    ArrayList<Line> cutPolygons = sutherHodgman.cutPolygons(polygons, cutter);
+
+
+
+                    sutherHodgman.cutPolygonsCrack(cutter);
+
+//                    System.out.println(cutPolygons);
+
+                    // Clear the polygons and add the result from the cutting operation
+//                    polygons.clear();
+//
+//                    raster.clear();
+//
+//                    for(Line line : cutPolygons){
+//                        lineRasterizerTrivial.drawLine(line.start, line.end);
+//                    }
+//                    polygonRasterizer.drawPolygon(cutter);
                     panel.repaint();
                 }
             }

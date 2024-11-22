@@ -3,12 +3,6 @@ package rasterizers;
 import objects.Line;
 import objects.Polygon;
 import raster.Raster;
-import rasterizers.LineRasterizerTrivial;
-import rasterizers.PolygonRasterizer;
-import window.Panel;
-
-import java.awt.*;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
 public class ScanLine {
@@ -24,8 +18,10 @@ public class ScanLine {
         // Auxiliary list for edges
         ArrayList<Line> edges = new ArrayList<>();
 
+        Polygon newPolygon = (Polygon)polygon.clone();
+
         // Populate edges from the polygon
-        for (Line line : polygon) {
+        for (Line line : newPolygon) {
             if (!line.isHorizontal()) {
                 line.oriented(); // Ensure consistent orientation
                 edges.add(line);
@@ -36,7 +32,7 @@ public class ScanLine {
         double yMin = Double.MAX_VALUE;
         double yMax = Double.MIN_VALUE;
 
-        for (Line line : polygon) {
+        for (Line line : newPolygon) {
             // Compare both endpoints of the line
             yMin = Math.min(yMin, Math.min(line.start.y, line.end.y));
             yMax = Math.max(yMax, Math.max(line.start.y, line.end.y));
@@ -69,7 +65,7 @@ public class ScanLine {
         }
 
         // Draw the boundary of the polygon
-        polygonRasterizer.drawPolygon(polygon);
+        polygonRasterizer.drawPolygon(newPolygon);
     }
 
 
